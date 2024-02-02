@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <title>get prime example</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+</head>
+
+<body>
+    <script type="module">
+        function isPrime(num) {
+            for (let i = 2, max = Math.sqrt(num); i <= max; i++) {
+                if (num % i === 0) {
+                    return false
+                }
+            }
+            return true
+        }
+
+        function nextPrime(start) {
+            let num = start
+            while (true) {
+                num += 1
+                if (isPrime(num)) {
+                    return num
+                }
+            }
+        }
+
+        const getPrimeByJS = (beginNum) => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(nextPrime(beginNum))
+                }, 0);
+            })
+        }
+
+        import init, { get_prime } from "./pkg/get_prime.js"
+
+        const getPrimeByRust = (beginNum) => {
+            return new Promise((resolve, reject) => {
+                init().then(() => {
+                    resolve(get_prime(beginNum))
+                })
+            })
+        }
+
+        const doExecAsync = async (func) => {
+            const startTime = performance.now()
+
+            await func()
+
+            const endTime = performance.now()
+
+            const timeTaken = endTime - startTime
+
+            return `関数の実行にかかった時間: ${timeTaken}ミリ秒`
+        }
+
+        window.onload = () => {
+            setTimeout(async () => {
+                const js_title = document.getElementById('js_title')
+                const js_result = document.getElementById('js_result')
+                const js_time = document.getElementById('js_time')
+
+                const rs_title = document.getElementById('rs_title')
+                const rs_result = document.getElementById('rs_result')
+                const rs_time = document.getElementById('rs_time')
+
+                js_time.innerHTML = await doExecAsync(async () => {
+                    const begin = 5000000000000000
+                    js_title.innerHTML = `JavaScriptで${begin}の次の素数を求める`
+                    js_result.innerHTML = `結果: ${String(await getPrimeByJS(begin))}`
+                })
+
+                rs_time.innerHTML = await doExecAsync(async () => {
+                    const begin = BigInt("5000000000000000")
+                    rs_title.innerHTML = `Rustで${begin}の次の素数を求める`
+                    rs_result.innerHTML = `結果: ${String(await getPrimeByRust(begin))}`
+                })
+            }, 100);
+        }
+    </script>
+
+    <h1>Rustによる WebAssembly体験</h1>
+
+    <div>
+        <h2 id="js_title"></h2>
+        <h3 id="js_result"></h3>
+        <h3 id="js_time"></h3>
+    </div>
+    <div>
+        <h2 id="rs_title"></h2>
+        <h3 id="rs_result"></h3>
+        <h3 id="rs_time"></h3>
+    </div>
+
+
+</body>
+
+</html>
